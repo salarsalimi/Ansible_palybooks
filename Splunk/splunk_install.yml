@@ -1,0 +1,40 @@
+---
+- name: Install Splunk for Debian-Redhat base servers
+  hosts: ALL
+  tasks:
+    - name: Check if Splunk is installed
+      ansible.builtin.stat:
+        path: /opt/splunkforwarder/bin/splunk
+      register: file_status
+
+    - name: Copy Install File on Destination Ubuntu Package
+      ansible.builtin.copy:
+        src: splunkforwarder-9.2.2-d76edf6f0a15-linux-2.6-amd64.deb
+        dest: /tmp/splunkforwarder-9.2.2-d76edf6f0a15-linux-2.6-amd64.deb
+      when: not file_status.stat.exists
+
+    - name: Copy Install File on Destination RedHat Package
+      ansible.builtin.copy:
+        src: splunkforwarder-9.2.2-d76edf6f0a15.x86_64.rpm
+        dest: /tmp/splunkforwarder-9.2.2-d76edf6f0a15.x86_64.rpm
+      when: not file_status.stat.exists
+
+    - name: Copy User-seed file 
+      ansible.builtin.copy:
+        src: user-seed.conf
+        dest: /tmp/user-seed.conf
+      when: not file_status.stat.exists
+
+    - name: Copy Script File
+      ansible.builtin.copy:
+        src: splunk.sh
+        dest: /tmp/splunk.sh
+        mode: '0755'
+      when: not file_status.stat.exists
+
+    - name: install splnuk with script
+      ansible.builtin.shell: /tmp/splunk.sh
+      when: 
+        #        - ansible_facts['os_family'] == "Debian" 
+        - not file_status.stat.exists
+
