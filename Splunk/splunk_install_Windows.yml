@@ -1,0 +1,49 @@
+---
+- name: Install Splunk for Windows Servers
+  hosts: Windows
+  gather_facts: false
+  tasks:
+    - name: Check if Splunk is installed
+      ansible.builtin.win_stat:
+        path: "C:\\program files\\SplunkUniversalForwarder\\bin\\splunk.exe"
+      register: file_status
+
+    - name: Copy Install File on Destination Windows Package
+      ansible.builtin.win_copy:
+        src: splunkforwarder-9.2.2-d76edf6f0a15-x64-release.msi
+        dest: "C:\\users\\Administrator\\Desktop\\splunkforwarder-9.2.2-d76edf6f0a15-x64-release.msi"
+      when: not file_status.stat.exists
+
+    - name: Copy Users-eed file 
+      ansible.builtin.win_copy:
+        src: user-seed.conf
+        dest: "C:\\users\\Administrator\\Desktop\\user-seed.conf"
+      when: not file_status.stat.exists
+
+    - name: Copy Sysmon exe file
+      ansible.builtin.win_copy:
+        src: Sysmon.exe
+        dest: "C:\\users\\Administrator\\Desktop\\Sysmon.exe"
+      when: not file_status.stat.exists
+
+    - name: Copy Sysmon Config file
+      ansible.builtin.win_copy:
+        src: config.xml
+        dest: "C:\\users\\Administrator\\Desktop\\config.xml"
+      when: not file_status.stat.exists
+
+    - name: Copy Install Powershell Script
+      ansible.builtin.win_copy:
+        src: splunk.ps1
+        dest: "C:\\users\\Administrator\\Desktop\\splunk.ps1"
+      when: not file_status.stat.exists
+
+    - name: install splnuk with Powershell script
+      ansible.builtin.win_shell: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        & "C:\\users\\Administrator\\Desktop\\splunk.ps1"
+      args:
+        executable: powershell.exe
+      when: 
+        - not file_status.stat.exists
+
